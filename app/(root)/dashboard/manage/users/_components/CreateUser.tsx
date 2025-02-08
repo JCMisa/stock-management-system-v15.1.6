@@ -172,7 +172,7 @@ const CreateUser = () => {
                         Date Of Birth
                       </label>
                       <Input
-                        type="text"
+                        type="date"
                         id="dateOfBirth"
                         name="dateOfBirth"
                         placeholder="e.g. February-11-2004"

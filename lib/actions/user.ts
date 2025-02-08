@@ -153,6 +153,7 @@ export const createUserInfo = async (
 
     // if successful creation
     if (data) {
+      revalidatePath("/dashboard/manage/users");
       return parseStringify({ data: data });
     }
     // if creation failed

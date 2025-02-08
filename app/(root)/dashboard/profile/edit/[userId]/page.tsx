@@ -36,6 +36,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import LoaderDialog from "@/components/custom/LoaderDialog";
+import { formatDate } from "@/lib/utils";
 
 const EditProfilePage = ({
   params,
@@ -129,7 +130,9 @@ const EditProfilePage = ({
         firstname: formData.get("firstname") as string,
         lastname: formData.get("lastname") as string,
         email: formData.get("email") as string,
-        dateOfBirth: formData.get("dateOfBirth") as string,
+        dateOfBirth:
+          (formData.get("dateOfBirth") as string) ||
+          (currentUser?.dateOfBirth as string),
         age: formData.get("age") as string,
         contact: formData.get("contact") as string,
         address: formData.get("address") as string,
@@ -303,13 +306,18 @@ const EditProfilePage = ({
                     Date Of Birth
                   </label>
                   <Input
-                    type="text"
+                    type="date"
                     id="dateOfBirth"
                     name="dateOfBirth"
                     placeholder="Month-Day-Year"
-                    defaultValue={currentUser?.dateOfBirth}
+                    defaultValue={formatDate(
+                      currentUser?.dateOfBirth as string
+                    )}
                     className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
                   />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {formatDate(currentUser?.dateOfBirth as string)}
+                  </span>
                 </div>
               </div>
 
@@ -340,7 +348,7 @@ const EditProfilePage = ({
                     onValueChange={(value) =>
                       setGender(value ? value : (currentUser?.gender as string))
                     }
-                    defaultValue={currentUser?.gender}
+                    value={currentUser?.gender}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Gender" />
@@ -457,7 +465,7 @@ const EditProfilePage = ({
                   onValueChange={(value) =>
                     setRole(value ? value : (currentUser?.role as string))
                   }
-                  defaultValue={currentUser?.role}
+                  value={currentUser?.role}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Role" />

@@ -216,9 +216,12 @@ export const updateTransaction = async (
 ) => {
   try {
     // First get the existing transaction to compare quantities
-    const existingTransaction = await db.query.Transaction.findFirst({
-      where: eq(Transaction.transactionId, form.transactionId),
-    });
+    const existingTransactionArray = await db
+      .select()
+      .from(Transaction)
+      .where(eq(Transaction.transactionId, form.transactionId))
+      .limit(1);
+    const existingTransaction = existingTransactionArray[0];
 
     if (!existingTransaction) {
       throw new Error("Transaction not found");
@@ -325,9 +328,12 @@ export const updateTransaction = async (
 export const deleteTransaction = async (transactionId: string) => {
   try {
     // First get the existing transaction to process stock returns
-    const existingTransaction = await db.query.Transaction.findFirst({
-      where: eq(Transaction.transactionId, transactionId),
-    });
+    const existingTransactionArray = await db
+      .select()
+      .from(Transaction)
+      .where(eq(Transaction.transactionId, transactionId))
+      .limit(1);
+    const existingTransaction = existingTransactionArray[0];
 
     if (!existingTransaction) {
       throw new Error("Transaction not found");

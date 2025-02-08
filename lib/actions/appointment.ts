@@ -128,10 +128,6 @@ export const updateAppointment = async (
       return parseStringify({ data: null });
     }
     return parseStringify({ data: null });
-    if (data) {
-      return parseStringify({ data: data });
-    }
-    return parseStringify({ data: null });
   } catch (error) {
     handleError(error);
   }

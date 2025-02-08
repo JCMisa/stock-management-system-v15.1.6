@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   BrainIcon,
-  ClipboardCopyIcon,
   LoaderCircle,
   LoaderCircleIcon,
   Pencil,
@@ -39,6 +38,7 @@ import { useRouter } from "next/navigation";
 import moment from "moment";
 import AllergiesInput from "../../patients/_components/AllergiesInput";
 import axios from "axios";
+import { formatDate } from "@/lib/utils";
 
 const EditAppointment = ({ appointmentId }: { appointmentId: string }) => {
   const router = useRouter();
@@ -70,54 +70,55 @@ const EditAppointment = ({ appointmentId }: { appointmentId: string }) => {
     setPrescription(value);
   };
 
-  const getAppointment = async () => {
-    try {
-      setLoading(true);
-
-      const result = await getAppointmentByAppointmentId(appointmentId);
-
-      if (result?.data !== null) {
-        setAppointment(result?.data);
-      }
-    } catch {
-      toast(
-        <p className="font-bold text-sm text-red-500">
-          Internal error occured while fetching the appointment
-        </p>
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const getAppointment = async () => {
+      try {
+        setLoading(true);
+
+        if (appointmentId) {
+          const result = await getAppointmentByAppointmentId(appointmentId);
+
+          if (result?.data !== null) {
+            setAppointment(result.data);
+          }
+        }
+        return;
+      } catch {
+        toast(
+          <p className="font-bold text-sm text-red-500">
+            Internal error occured while fetching the appointment
+          </p>
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
     getAppointment();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointmentId]);
-
-  const getPatientInfo = async () => {
-    try {
-      setLoading(true);
-
-      const result = await getPatientLayout(appointment?.patientId as string);
-      if (result?.data !== null) {
-        setPatient(result.data);
-      }
-    } catch {
-      toast(
-        <p className="font-bold text-sm text-red-500">
-          Internal error occured while fetching the patient
-        </p>
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
+    const getPatientInfo = async () => {
+      try {
+        setLoading(true);
+
+        const result = await getPatientLayout(appointment?.patientId as string);
+        if (result?.data !== null) {
+          setPatient(result?.data);
+        }
+      } catch {
+        toast(
+          <p className="font-bold text-sm text-red-500">
+            Internal error occured while fetching the patient
+          </p>
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
     getPatientInfo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appointmentId]);
+  }, [appointment]);
 
   const askAiPrescription = async () => {
     const finalReason = appointmentReason || appointment?.reason;
@@ -131,7 +132,8 @@ const EditAppointment = ({ appointmentId }: { appointmentId: string }) => {
         : appointment?.allergies?.split(", ") || [];
 
     // AI prescription generation logic
-    const PROMPT = `You are an expert doctor with 80 years of experience, provide me a prescription based on the following data:
+    const PROMPT = `You are an expert doctor with 80 years of experience, provide me a prescription based on the following data, provide only direct answer, no excuses that you are an AI:
+
 Health condition: ${finalReason},
 Description of condition: ${finalConditionDesc},
 Severity: ${finalConditionSeverity},
@@ -185,30 +187,6 @@ Example response format:
     }
   };
 
-  const copyToClipboard = async (textToCopy: string) => {
-    try {
-      const blob = new Blob([textToCopy], { type: "text/html" });
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "text/html": blob,
-          "text/plain": new Blob([textToCopy], { type: "text/plain" }),
-        }),
-      ]);
-      toast(
-        <p className="text-sm font-bold text-green-500">
-          Text copied successfully
-        </p>
-      );
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
-      toast(
-        <p className="text-sm font-bold text-red-500">
-          Failed to copy to clipboard
-        </p>
-      );
-    }
-  };
-
   const handleSubmit = async (prevState: unknown, formData: FormData) => {
     try {
       const finalStatus = status || appointment?.status;
@@ -228,7 +206,9 @@ Example response format:
         familyMedicalHistory: appointment?.familyMedicalHistory as string,
         allergies: allergiesArray.join(", "),
         status: finalStatus as string,
-        date: moment(formData.get("date") as string).format("MM-DD-YYYY"),
+        date:
+          moment(formData.get("date") as string).format("MM-DD-YYYY") ||
+          (appointment?.date as string),
         timeStart: formData.get("timeStart") as string,
         timeEnd: formData.get("timeEnd") as string,
         prescription: finalPrescription as string,
@@ -404,8 +384,11 @@ Example response format:
                   type="date"
                   id="date"
                   name="date"
-                  defaultValue={appointment?.date}
+                  defaultValue={formatDate(appointment?.date as string)}
                 />
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {appointment?.date}
+                </span>
               </div>
               <div className="flex flex-row items-center justify-center gap-3 w-full">
                 <div className="flex flex-col gap-1 w-full">
@@ -462,11 +445,15 @@ Example response format:
                   theme="snow"
                   className="bg-light dark:bg-dark"
                   defaultValue={patient?.prescription}
-                  value={prescription}
+                  value={
+                    aiPatientPrescription
+                      ? aiPatientPrescription
+                      : patient?.prescription
+                  }
                   onChange={handleQuillChange}
                 />
 
-                {aiPatientPrescription && (
+                {/* {aiPatientPrescription && (
                   <div className="mt-5 flex flex-col gap-3">
                     <div
                       className="text-xs text-gray-500 dark:text-gray-400"
@@ -485,7 +472,7 @@ Example response format:
                       <p className="text-xs">Copy Text</p>
                     </Button>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
             <AlertDialogFooter className="mt-5">

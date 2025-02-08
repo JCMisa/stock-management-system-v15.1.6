@@ -607,7 +607,8 @@ const CreatePatientForm = ({ patientId }: { patientId: string }) => {
         </div>
 
         {/* assign to doctor - can assign if admin or doctor only */}
-        {(currentUser?.role === "admin" || currentUser?.role === "doctor") && (
+        {(currentUser?.role === "admin" ||
+          currentUser?.role === "receptionist") && (
           <div className="flex flex-col gap-2 mt-10 border border-transparent border-t-primary">
             <h1 className="text-center text-2xl font-bold py-3">Doctor</h1>
             <Separator className="border border-light-200 dark:border-dark-200" />
