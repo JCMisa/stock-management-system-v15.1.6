@@ -9,67 +9,98 @@ import { toast } from "sonner";
 
 const UploadRoleRequestProof = ({
   setImageUrlProof,
+  setFileExtension,
 }: {
   setImageUrlProof: (downloadUrl: string) => void;
+  setFileExtension: (extension: string) => void;
 }) => {
   const [selectedFile, setSelectedFile] = useState<any>();
+  const [isPDF, setIsPDF] = useState(false);
 
-  // select image from files and upload to to firebase storage
+  // Select file from input and upload to Firebase Storage
   const onFileSelected = async (e: any) => {
-    const file = e.target.files[0]; // get the selected image file
-    setSelectedFile(URL.createObjectURL(file)); // create a blob of the image file
+    const file = e.target.files[0]; // Get the selected file
 
-    const fileName = Date.now() + ".jpg"; // generate the name of the file
-    const storageRef = ref(storage, "rhu/" + fileName); // pass the filename to the specific path in the storage
-    await uploadBytes(storageRef, file)
-      .then(() => {
-        console.log("upload file complete"); // this will store the image bytes to the firebase storage specified location
-      })
-      .then(() => {
-        getDownloadURL(storageRef).then(async (downloadUrl) => {
-          // this will get the viewable url of the img
-          try {
-            setImageUrlProof(downloadUrl);
+    if (file) {
+      const fileType = file.type;
+      const isPDFFile = fileType === "application/pdf";
+      setIsPDF(isPDFFile); // Update state based on file type
 
-            toast(
-              <p className="text-sm font-bold text-green-500">
-                Image uploaded successfully
-              </p>
-            );
-          } catch {
-            toast(
-              <p className="text-sm font-bold text-red-500">
-                Internal error occurred while uploading the image
-              </p>
-            );
-          }
+      setSelectedFile(URL.createObjectURL(file)); // Create a blob URL of the file
+
+      const fileExtension = isPDFFile ? ".pdf" : ".jpg"; // Set extension based on file type
+      setFileExtension(isPDFFile ? ".pdf" : ".jpg");
+      const fileName = Date.now() + fileExtension; // Generate a unique file name
+      const storageRef = ref(storage, "rhu/" + fileName); // Reference to the file in storage
+
+      await uploadBytes(storageRef, file)
+        .then(() => {
+          console.log("Upload complete");
+        })
+        .then(() => {
+          getDownloadURL(storageRef).then(async (downloadUrl) => {
+            // Get the downloadable URL
+            try {
+              setImageUrlProof(downloadUrl);
+
+              toast(
+                <p className="text-sm font-bold text-green-500">
+                  File uploaded successfully
+                </p>
+              );
+            } catch {
+              toast(
+                <p className="text-sm font-bold text-red-500">
+                  Internal error occurred while uploading the file
+                </p>
+              );
+            }
+          });
+        })
+        .catch((error) => {
+          console.error("Error uploading file:", error);
+          toast(
+            <p className="text-sm font-bold text-red-500">
+              Error uploading file
+            </p>
+          );
         });
-      });
+    }
   };
 
   return (
     <div>
       <label htmlFor="upload-image">
         {selectedFile ? (
-          <Image
-            src={selectedFile}
-            loading="lazy"
-            placeholder="blur"
-            blurDataURL="/blur.jpg"
-            width={1000}
-            height={1000}
-            alt={"banner"}
-            className="object-cover cursor-pointer h-52 rounded-lg bg-blue-500 w-full"
-          />
+          isPDF ? (
+            <embed
+              src={selectedFile}
+              width="100%"
+              height="500px"
+              type="application/pdf"
+              className="object-cover cursor-pointer h-52 rounded-lg bg-light-100 dark:bg-dark-100 w-full"
+            />
+          ) : (
+            <Image
+              src={selectedFile}
+              loading="lazy"
+              placeholder="blur"
+              blurDataURL="/blur.jpg"
+              width={1000}
+              height={1000}
+              alt="Uploaded File"
+              className="object-cover cursor-pointer h-52 rounded-lg bg-light-100 dark:bg-dark-100 w-full"
+            />
+          )
         ) : (
           <Image
-            src={"/empty-img.png"}
+            src="/empty-img.png"
             loading="lazy"
             placeholder="blur"
             blurDataURL="/blur.jpg"
             width={1000}
             height={1000}
-            alt={"banner"}
+            alt="Placeholder"
             className="object-cover cursor-pointer w-full h-52 rounded-lg"
           />
         )}
@@ -79,7 +110,7 @@ const UploadRoleRequestProof = ({
         name="file"
         type="file"
         id="upload-image"
-        accept="image/png, image/jpeg"
+        accept="image/png, image/jpeg, application/pdf"
         onChange={onFileSelected}
       />
     </div>

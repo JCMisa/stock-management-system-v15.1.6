@@ -25,7 +25,7 @@ const DashboardHeader = ({ user }: { user: UserType }) => {
           {Number(user?.roleChangeRequest) > 0 ? (
             <AskRoleChangeDialog defaultRole={user?.role} />
           ) : (
-            <Button variant={"destructive"} size={"sm"}>
+            <Button variant={"destructive"} size={"sm"} disabled aria-readonly>
               Out of Request
             </Button>
           )}

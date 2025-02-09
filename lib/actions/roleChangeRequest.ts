@@ -16,6 +16,7 @@ export const askRoleChange = async (
   requestedRole: string,
   reason: string,
   imageProof: string,
+  fileExtension: string,
   createdAt: string
 ) => {
   // rate limit the user to 1 request per 1 minute
@@ -32,6 +33,7 @@ export const askRoleChange = async (
       requestedRole: requestedRole,
       reason: reason,
       imageProof: imageProof,
+      fileExtension: fileExtension,
       createdAt: createdAt,
     });
 
@@ -45,6 +47,7 @@ export const askRoleChange = async (
         .where(eq(User.email, requestOwner)); // Add where clause to target specific user
 
       if (decrementUserRequestLimit) {
+        revalidatePath("/dashboard");
         return parseStringify({ data: "success" });
       }
     }

@@ -28,17 +28,20 @@ const CurrentUserRole = () => {
   const { user } = useUser();
   const [userRole, setUserRole] = useState("");
 
-  const getUserFromDb = async () => {
-    if (!user) return null;
-    const currentUser = await getUserByEmail(
-      user?.primaryEmailAddress?.emailAddress as string
-    );
-    setUserRole(currentUser?.data?.role);
-  };
-
   useEffect(() => {
+    const getUserFromDb = async () => {
+      try {
+        if (!user) return null;
+        const currentUser = await getUserByEmail(
+          user?.primaryEmailAddress?.emailAddress as string
+        );
+        setUserRole(currentUser?.data?.role);
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    };
+
     getUserFromDb();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return userRole;

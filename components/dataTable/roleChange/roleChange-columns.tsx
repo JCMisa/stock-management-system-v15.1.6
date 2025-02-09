@@ -22,17 +22,20 @@ const CurrentUserRole = () => {
   const { user } = useUser();
   const [userRole, setUserRole] = useState("");
 
-  const getUserFromDb = async () => {
-    if (!user) return null;
-    const currentUser = await getUserByEmail(
-      user?.primaryEmailAddress?.emailAddress as string
-    );
-    setUserRole(currentUser?.data?.role);
-  };
-
   useEffect(() => {
+    const getUserFromDb = async () => {
+      try {
+        if (!user) return null;
+        const currentUser = await getUserByEmail(
+          user?.primaryEmailAddress?.emailAddress as string
+        );
+        setUserRole(currentUser?.data?.role);
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    };
+
     getUserFromDb();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return userRole;
@@ -52,6 +55,8 @@ const handleImageClick = (
     image.requestFullscreen();
   }
 };
+
+const handlePdfClick = () => {};
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -152,34 +157,69 @@ export const columns: ColumnDef<any>[] = [
     },
     cell: ({ row }) => {
       const imageProofUrl = row.getValue("imageProof") as string;
+      const proofExtension = row.getValue("fileExtension") as string;
 
+      // Function to determine if the file is a PDF
+      const isPDF = proofExtension?.endsWith(".pdf");
+
+      return imageProofUrl ? (
+        isPDF ? (
+          <Link
+            href={imageProofUrl}
+            target="_blank"
+            passHref
+            rel="noopener noreferrer"
+          >
+            <div className="w-20 h-20 relative rounded-lg overflow-hidden cursor-pointer">
+              <embed
+                src={imageProofUrl}
+                type="application/pdf"
+                width="100%"
+                height="100%"
+                className="w-full h-full pointer-events-none"
+                onClick={handlePdfClick}
+              />
+            </div>
+          </Link>
+        ) : (
+          <Image
+            src={imageProofUrl}
+            loading="lazy"
+            placeholder="blur"
+            blurDataURL="/blur.jpg"
+            alt="proof"
+            width={1000}
+            height={1000}
+            className="w-20 h-20 rounded-lg cursor-pointer"
+            onClick={handleImageClick}
+          />
+        )
+      ) : (
+        <Image
+          src="/empty-img.png"
+          loading="lazy"
+          placeholder="blur"
+          blurDataURL="/blur.jpg"
+          alt="proof"
+          width={1000}
+          height={1000}
+          className="w-20 h-20 rounded-lg cursor-pointer"
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "fileExtension",
+    header: ({ column }) => {
       return (
-        <>
-          {imageProofUrl ? (
-            <Image
-              src={imageProofUrl}
-              loading="lazy"
-              placeholder="blur"
-              blurDataURL="/blur.jpg"
-              alt="proof"
-              width={1000}
-              height={1000}
-              className="w-20 h-20 rounded-lg cursor-pointer"
-              onClick={handleImageClick}
-            />
-          ) : (
-            <Image
-              src={"/empty-img.png"}
-              loading="lazy"
-              placeholder="blur"
-              blurDataURL="/blur.jpg"
-              alt="proof"
-              width={1000}
-              height={1000}
-              className="w-20 h-20 rounded-lg cursor-pointer"
-            />
-          )}
-        </>
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent hover:text-white"
+        >
+          File Extension
+          <ArrowUpDown className="ml-2 h-4 w-4 text-white" />
+        </Button>
       );
     },
   },

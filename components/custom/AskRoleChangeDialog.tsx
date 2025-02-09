@@ -35,6 +35,7 @@ const AskRoleChangeDialog = ({ defaultRole }: { defaultRole: string }) => {
   const [requestedRole, setRequestedRole] = useState("");
   const [requestedRoleReason, setRequestedRoleReason] = useState("");
   const [imageUrlProof, setImageUrlProof] = useState("");
+  const [fileExtension, setFileExtension] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [loggedInUser, setLoggedInUser] = useState<UserType>();
@@ -78,6 +79,7 @@ const AskRoleChangeDialog = ({ defaultRole }: { defaultRole: string }) => {
         requestedRole,
         requestedRoleReason,
         imageUrlProof,
+        fileExtension,
         moment().format("MM-DD-YYYY")
       );
 
@@ -174,6 +176,7 @@ const AskRoleChangeDialog = ({ defaultRole }: { defaultRole: string }) => {
                   setImageUrlProof={(downloadUrl) =>
                     setImageUrlProof(downloadUrl)
                   }
+                  setFileExtension={(extension) => setFileExtension(extension)}
                 />
                 <label className="text-xs text-gray-500 dark:text-gray-400">
                   Click the image banner to upload proof.

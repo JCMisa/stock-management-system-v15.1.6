@@ -210,7 +210,12 @@ const DashboardMobileNavigation = () => {
                 </div>
               ) : (
                 <div className="absolute bottom-20 right-3">
-                  <Button variant={"destructive"} size={"sm"}>
+                  <Button
+                    variant={"destructive"}
+                    size={"sm"}
+                    disabled
+                    aria-readonly
+                  >
                     Out of Request
                   </Button>
                 </div>

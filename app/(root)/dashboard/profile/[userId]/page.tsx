@@ -30,13 +30,40 @@ export async function generateMetadata({
   const userId = (await params)?.userId;
   const userFromProps = await getUser(userId as string);
 
+  const baseURL =
+    process.env.NODE_ENV === "development"
+      ? process.env.NEXT_PUBLIC_BASE_URL_DEV
+      : process.env.NEXT_PUBLIC_BASE_URL_PROD;
+  if (!baseURL) {
+    throw new Error("Base URL is not defined in environment variables.");
+  }
+
+  const firstName = userFromProps?.data?.firstname;
+  const lastName = userFromProps?.data?.lastname;
+  const descriptionBio = userFromProps?.data?.bio;
+  const imageUrl = userFromProps?.data?.imageUrl || "/empty-img.png";
+
   return {
-    title: userFromProps?.data?.firstname + " " + userFromProps?.data?.lastname,
-    description: userFromProps?.data?.bio,
+    metadataBase: new URL(baseURL),
+    title: `${firstName} ${lastName}`,
+    description: descriptionBio,
     openGraph: {
+      title: `RHU - ${firstName} ${lastName}`,
+      description: descriptionBio,
       images: [
         {
-          url: userFromProps?.data?.imageUrl,
+          url: imageUrl,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: `@jcmisa_dev`,
+      title: `RHU - ${firstName} ${lastName}`,
+      description: descriptionBio,
+      images: [
+        {
+          url: imageUrl,
         },
       ],
     },
