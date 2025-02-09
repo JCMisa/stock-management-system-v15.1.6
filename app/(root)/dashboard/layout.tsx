@@ -18,7 +18,7 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
         <DashboardHeader user={user?.data} />
         <div className="p-5 md:ml-32 lg:ml-64">{children}</div>
       </section>
-      <div className="fixed bottom-5 right-5">
+      <div className="fixed bottom-5 left-5 z-50">
         <ModeToggle />
       </div>
     </main>
