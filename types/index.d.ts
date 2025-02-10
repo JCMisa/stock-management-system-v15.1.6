@@ -86,7 +86,8 @@ declare interface MedicineType {
   expiryDate: string;
   stockQuantity: string;
   reorderLevel: string;
-  supplier: string;
+  supplierId: string;
+  supplierName: string;
   batchNumber: string;
   costPrice: number;
   sellingPrice: number;
@@ -120,5 +121,22 @@ declare interface RoleChangeRequestType {
   imageProof: string;
   fileExtension: string;
   status: string;
+  createdAt: string;
+}
+
+declare interface SupplierType {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  supplierDescription: string;
+  contactPerson: string;
+  contactEmail: string;
+  contactPhone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  website: string;
   createdAt: string;
 }

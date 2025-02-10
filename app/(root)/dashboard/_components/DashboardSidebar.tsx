@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   Newspaper,
   Pill,
+  Store,
   User,
   UserCircle,
 } from "lucide-react";
@@ -81,6 +82,12 @@ const DashboardSidebar = () => {
           label: "Medicines",
           href: "/dashboard/manage/medicines",
           visible: ["admin", "doctor", "receptionist", "pharmacist"],
+        },
+        {
+          icon: Store,
+          label: "Suppliers",
+          href: "/dashboard/manage/suppliers",
+          visible: ["admin"],
         },
         {
           icon: FileHeart,

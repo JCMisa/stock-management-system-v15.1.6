@@ -82,6 +82,24 @@ export const Appointment = pgTable("appointment", {
   createdAt: varchar("createdAt"),
 });
 
+export const Supplier = pgTable("supplier", {
+  id: serial("id").primaryKey(),
+  supplierId: varchar("supplierId").notNull().unique(), // Unique identifier for the supplier
+  supplierName: varchar("supplierName").notNull(), // Name of the supplier company
+  supplierDescription: text("supplierDescription"),
+  contactPerson: varchar("contactPerson"), // Name of the contact person at the supplier
+  contactEmail: varchar("contactEmail"), // Email address of the contact person
+  contactPhone: varchar("contactPhone"), // Phone number of the contact person
+  address: varchar("address"), // Address of the supplier
+  city: varchar("city"), // City of the supplier
+  state: varchar("state"), // State of the supplier
+  zipCode: varchar("zipCode"), // Zip code of the supplier
+  country: varchar("country"), // Country of the supplier
+  website: varchar("website"), // Website of the supplier (optional)
+  // Add other relevant properties like payment terms, credit limit, etc. as needed.
+  createdAt: varchar("createdAt"), // Timestamp of when the supplier was added
+});
+
 export const Medicine = pgTable("medicine", {
   id: serial("id").primaryKey(),
   addedBy: varchar("addedBy"), //ok
@@ -107,7 +125,10 @@ export const Medicine = pgTable("medicine", {
   // inventory management
   stockQuantity: integer("stockQuantity"), // how many in total are there in the inventory - ok
   reorderLevel: integer("reorderLevel"), // quantity level of medicine inventory where you need to re order again - ok
-  supplier: varchar("supplier"), // name of supplier - ok
+  supplierId: varchar("supplierId")
+    .references(() => Supplier.supplierId)
+    .notNull(),
+  supplierName: varchar("supplierName"), // name of supplier - ok
   batchNumber: varchar("batchNumber"), //ok
   // restock: varchar("restock"), // value is either [needed or not needed] - ok
 

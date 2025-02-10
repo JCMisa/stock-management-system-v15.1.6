@@ -80,7 +80,8 @@ export const createMedicine = async (
     expiryDate: string;
     stockQuantity: string;
     reorderLevel: string;
-    supplier: string;
+    supplierId: string;
+    supplierName: string;
     batchNumber: string;
     costPrice: string;
     sellingPrice: string;
@@ -126,7 +127,8 @@ export const createMedicine = async (
         : "not expired",
       stockQuantity: parseInt(form.stockQuantity) || 0,
       reorderLevel: parseInt(form.reorderLevel) || 0,
-      supplier: form.supplier,
+      supplierId: form.supplierId,
+      supplierName: form.supplierName,
       batchNumber: form.batchNumber,
       costPrice: costPrice,
       sellingPrice: sellingPrice,
@@ -162,7 +164,8 @@ export const updateMedicine = async (
     expiryDate: string;
     stockQuantity: string;
     reorderLevel: string;
-    supplier: string;
+    supplierId: string;
+    supplierName: string;
     batchNumber: string;
     costPrice: string;
     sellingPrice: string;
@@ -223,7 +226,8 @@ export const updateMedicine = async (
             : "expired",
         stockQuantity: parseInt(form.stockQuantity) || 0,
         reorderLevel: parseInt(form.reorderLevel) || 0,
-        supplier: form.supplier,
+        supplierId: form.supplierId,
+        supplierName: form.supplierName,
         batchNumber: form.batchNumber,
         costPrice: costPrice,
         sellingPrice: sellingPrice,

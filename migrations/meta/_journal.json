@@ -43,6 +43,27 @@
       "when": 1739096218677,
       "tag": "0005_big_amazoness",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1739191049168,
+      "tag": "0006_small_adam_warlock",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1739191271057,
+      "tag": "0007_far_sandman",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1739191345871,
+      "tag": "0008_tiresome_raza",
+      "breakpoints": true
     }
   ]
 }

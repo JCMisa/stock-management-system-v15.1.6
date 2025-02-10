@@ -23,6 +23,7 @@ import UploadMedicineImage from "./UploadMedicineImage";
 import { useRouter } from "next/navigation";
 import DeleteMedicine from "./DeleteMedicine";
 import LoaderDialog from "@/components/custom/LoaderDialog";
+import { getAllSuppliers } from "@/lib/actions/supplier";
 
 const UpdateMedicineForm = ({ medicineId }: { medicineId: string }) => {
   const router = useRouter();
@@ -44,6 +45,38 @@ const UpdateMedicineForm = ({ medicineId }: { medicineId: string }) => {
   const [fdaApproved, setFdaApproved] = useState<string>(
     medicine?.fdaApproved as string
   );
+  const [suppliersList, setSuppliersList] = useState<SupplierType[]>([]);
+  const [selectedSupplier, setSelectedSupplier] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const getAllSuppliersList = async () => {
+      try {
+        const result = await getAllSuppliers();
+        if (result?.data !== null) {
+          setSuppliersList(result?.data);
+        }
+      } catch (error) {
+        console.log("error fetching all suppliers: ", error);
+      }
+    };
+
+    getAllSuppliersList();
+  }, []);
+
+  const handleSupplierChange = (value: string) => {
+    const supplier = suppliersList?.find((s) => s.supplierId === value);
+    if (supplier) {
+      setSelectedSupplier({
+        id: supplier.supplierId,
+        name: supplier.supplierName,
+      });
+    } else {
+      setSelectedSupplier(null); // Clear selection if no supplier is found
+    }
+  };
 
   // for input with multiple values
   const [ingredients, setIngredients] = useState<string>("");
@@ -119,7 +152,8 @@ const UpdateMedicineForm = ({ medicineId }: { medicineId: string }) => {
         expiryDate: formData.get("expiryDate") as string,
         stockQuantity: formData.get("stockQuantity") as string,
         reorderLevel: formData.get("reorderLevel") as string,
-        supplier: formData.get("supplier") as string,
+        supplierId: selectedSupplier?.id as string,
+        supplierName: selectedSupplier?.name as string,
         batchNumber: formData.get("batchNumber") as string,
         costPrice: formData.get("costPrice") as string,
         sellingPrice: formData.get("sellingPrice") as string,
@@ -291,6 +325,7 @@ const UpdateMedicineForm = ({ medicineId }: { medicineId: string }) => {
                 </div>
                 <div className="flex items-end justify-end mt-2">
                   <Button
+                    size={"sm"}
                     className="bg-red-500 hover:bg-red-600 transition-all"
                     onClick={() => setIngredientsArray([])}
                   >
@@ -457,14 +492,27 @@ const UpdateMedicineForm = ({ medicineId }: { medicineId: string }) => {
                   htmlFor=""
                   className="text-xs text-gray-500 dark:text-gray-400"
                 >
-                  Supplier Name
+                  Supplier
                 </label>
-                <Input
-                  type="text"
-                  id="supplier"
-                  name="supplier"
-                  defaultValue={medicine?.supplier}
-                />
+                <Select
+                  onValueChange={(val) => handleSupplierChange(val)}
+                  defaultValue={medicine?.supplierId}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select medicines" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliersList?.length > 0 &&
+                      suppliersList?.map((supplier) => (
+                        <SelectItem
+                          key={supplier?.supplierId}
+                          value={supplier?.supplierId}
+                        >
+                          <p className="text-sm">{supplier?.supplierName}</p>
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex flex-col gap-1 w-full">
                 <label
