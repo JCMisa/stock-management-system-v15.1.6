@@ -65,3 +65,23 @@ export const calculateAge = (dateString: string) => {
   }
   return age;
 };
+
+// Example utility function
+export const isPositiveInteger = (value: string) => {
+  const regex = /^\d+$/;
+  return regex.test(value);
+};
+
+export const matchAgeBirth = (dateString: string) => {
+  const today = new Date();
+  const birthDate = new Date(dateString);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+  return age;
+};

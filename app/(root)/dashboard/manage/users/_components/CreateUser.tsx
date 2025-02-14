@@ -29,9 +29,11 @@ import LoaderDialog from "@/components/custom/LoaderDialog";
 import {
   calculateAge,
   isFutureDate,
+  isPositiveInteger,
   isSQLInjection,
   isValidDate,
   isValidEmail,
+  matchAgeBirth,
 } from "@/lib/validations";
 
 interface FieldErrors {
@@ -59,6 +61,8 @@ const CreateUser = () => {
         gender,
         role,
       };
+
+      // ... validation starts here ...
 
       let isValid = true; // Flag to track overall form validity
       const errors: { [key: string]: string } = {}; // Object to store error messages
@@ -119,10 +123,7 @@ const CreateUser = () => {
       }
 
       // Validation checks – for dateOfBirth
-      if (!formField.dateOfBirth) {
-        errors.dateOfBirth = "Date of birth is required";
-        isValid = false;
-      } else if (!isValidDate(formField.dateOfBirth)) {
+      if (!isValidDate(formField.dateOfBirth)) {
         errors.dateOfBirth = "Invalid date format. Please use YYYY-MM-DD";
         isValid = false;
       } else if (isFutureDate(formField.dateOfBirth)) {
@@ -133,7 +134,31 @@ const CreateUser = () => {
         isValid = false;
       }
 
-      // ... Add similar validation for other fields (rest of fields, etc.) ...
+      // Validation checks – for age
+      if (!formField.age) {
+        errors.age = "Age is required";
+        isValid = false;
+      } else if (!isPositiveInteger(formField.age)) {
+        errors.age = "Age must be a positive integer";
+        isValid = false;
+      } else if (Number(formField.age) < 18) {
+        errors.age = "You must be at least 18 years old";
+        isValid = false;
+      } else if (Number(formField.age) > 150) {
+        errors.age = "Age must be less than or equal to 100 years old";
+        isValid = false;
+      }
+
+      // Validation checks – for dateOfBirth and age matching
+      if (
+        matchAgeBirth(formField.dateOfBirth) !== parseInt(formField.age, 10)
+      ) {
+        errors.dateOfBirth = "Date of birth does not match the provided age";
+        errors.age = "Age does not match the provided date of birth";
+        isValid = false;
+      }
+
+      // ... validation ends here ...
 
       if (!isValid) {
         setFieldErrors(errors);
@@ -312,6 +337,8 @@ const CreateUser = () => {
                           id="age"
                           name="age"
                           type="number"
+                          min={0}
+                          max={150}
                           placeholder="Enter age here"
                           className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-xs border-gray-300 rounded-md"
                         />
