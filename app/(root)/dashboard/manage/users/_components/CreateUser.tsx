@@ -26,8 +26,22 @@ import moment from "moment";
 import { createUserInfo } from "@/lib/actions/user";
 import { toast } from "sonner";
 import LoaderDialog from "@/components/custom/LoaderDialog";
+import {
+  calculateAge,
+  isFutureDate,
+  isSQLInjection,
+  isValidDate,
+  isValidEmail,
+} from "@/lib/validations";
+
+interface FieldErrors {
+  [key: string]: string;
+}
 
 const CreateUser = () => {
+  // error states
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
   const [gender, setGender] = useState<string>("male");
   const [role, setRole] = useState<string>("guest");
 
@@ -46,6 +60,93 @@ const CreateUser = () => {
         role,
       };
 
+      let isValid = true; // Flag to track overall form validity
+      const errors: { [key: string]: string } = {}; // Object to store error messages
+
+      // Validation checks – for firstname
+      if (!formField.firstname) {
+        errors.firstname = "First name is required";
+        isValid = false;
+      } else if (formField.firstname.length <= 2) {
+        errors.firstname = "First name must be greater than 2 characters long";
+        isValid = false;
+      } else if (formField.firstname.length > 150) {
+        errors.firstname =
+          "First name must be less than or equal to 150 characters only";
+        isValid = false;
+      } else if (isSQLInjection(formField.firstname)) {
+        errors.firstname =
+          "Possible SQL injection detected. Avoid using SQL keywords";
+        isValid = false;
+      }
+
+      // Validation checks – for lastname
+      if (!formField.lastname) {
+        errors.lastname = "Last name is required";
+        isValid = false;
+      } else if (formField.firstname.length <= 2) {
+        errors.firstname = "Last name must be greater than 2 characters long";
+        isValid = false;
+      } else if (formField.lastname.length > 150) {
+        errors.firstname =
+          "Last name must be less than or equal to 150 characters only";
+        isValid = false;
+      } else if (isSQLInjection(formField.lastname)) {
+        errors.lastname =
+          "Possible SQL injection detected. Avoid using SQL keywords";
+        isValid = false;
+      }
+
+      // Validation checks – for email
+      if (!formField.email) {
+        errors.email = "Email is required";
+        isValid = false;
+      } else if (!isValidEmail(formField.email)) {
+        // Example email validation
+        errors.email = "Invalid email format";
+        isValid = false;
+      } else if (formField.email.length <= 2) {
+        errors.email = "Email must be greater than 2 characters long";
+        isValid = false;
+      } else if (formField.email.length > 150) {
+        errors.email =
+          "Email must be less than or equal to 150 characters only";
+        isValid = false;
+      } else if (isSQLInjection(formField.email)) {
+        errors.email =
+          "Possible SQL injection detected. Avoid using SQL keywords";
+        isValid = false;
+      }
+
+      // Validation checks – for dateOfBirth
+      if (!formField.dateOfBirth) {
+        errors.dateOfBirth = "Date of birth is required";
+        isValid = false;
+      } else if (!isValidDate(formField.dateOfBirth)) {
+        errors.dateOfBirth = "Invalid date format. Please use YYYY-MM-DD";
+        isValid = false;
+      } else if (isFutureDate(formField.dateOfBirth)) {
+        errors.dateOfBirth = "Date of birth cannot be in the future";
+        isValid = false;
+      } else if (calculateAge(formField.dateOfBirth) < 18) {
+        errors.dateOfBirth = "You must be at least 18 years old";
+        isValid = false;
+      }
+
+      // ... Add similar validation for other fields (rest of fields, etc.) ...
+
+      if (!isValid) {
+        setFieldErrors(errors);
+        console.log("Form has errors:", errors); // Log all errors to the console
+        toast(
+          <p className="font-bold text-xs text-red-500">
+            Please correct the form errors.
+          </p>
+        );
+        return null; // Stop execution if the form is invalid
+      }
+
+      // Only call createUserInfo if isValid is true
       const result = await createUserInfo(
         prevState,
         uuidv4(),
@@ -56,7 +157,7 @@ const CreateUser = () => {
 
       if (result?.data !== null) {
         toast(
-          <p className="font-bold text-sm text-green-500">
+          <p className="font-bold text-xs text-green-500">
             User created successfully
           </p>
         );
@@ -65,7 +166,7 @@ const CreateUser = () => {
       return result?.data;
     } catch (error) {
       toast(
-        <p className="font-bold text-sm text-red-500">
+        <p className="font-bold text-xs text-red-500">
           Failed to create the user
         </p>
       );
@@ -100,10 +201,23 @@ const CreateUser = () => {
               {/* personal info */}
               <div className="pt-8">
                 <div>
+                  {/* Display errors at the top */}
+                  {Object.entries(fieldErrors).length > 0 && ( // Only show errors if there are any
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-xs">
+                      {/* Styling for error box */}
+                      <ul className="list-disc pl-5">
+                        {/* Use a list for better formatting */}
+                        {Object.entries(fieldErrors).map(([key, message]) => (
+                          <li key={key}>{message}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   <h3 className="text-lg leading-6 font-medium text-dark dark:text-white">
                     Personal Information
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500">
                     Use a permanent address where you can receive mail.
                   </p>
                 </div>
@@ -113,17 +227,18 @@ const CreateUser = () => {
                       <div className="sm:col-span-3">
                         <label
                           htmlFor="first-name"
-                          className="block text-sm font-medium text-[#76828D]"
+                          className="block text-xs font-medium text-[#76828D] w-full"
                         >
                           First name
                         </label>
                         <div className="mt-1">
                           <Input
+                            required
                             type="text"
                             name="firstname"
                             id="firstname"
                             placeholder="Enter your first name"
-                            className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                            className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-xs border-gray-300 rounded-md"
                           />
                         </div>
                       </div>
@@ -132,17 +247,18 @@ const CreateUser = () => {
                     <div className="w-full">
                       <label
                         htmlFor="last-name"
-                        className="block text-sm font-medium text-[#76828D]"
+                        className="block text-xs font-medium text-[#76828D]"
                       >
                         Last name
                       </label>
                       <div className="mt-1">
                         <Input
+                          required
                           type="text"
                           name="lastname"
                           id="lastname"
                           placeholder="Enter your last name"
-                          className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                          className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-xs border-gray-300 rounded-md"
                         />
                       </div>
                     </div>
@@ -152,23 +268,24 @@ const CreateUser = () => {
                     <div className="w-full">
                       <label
                         htmlFor="email"
-                        className="block text-sm font-medium text-[#76828D]"
+                        className="block text-xs font-medium text-[#76828D]"
                       >
                         Email address
                       </label>
                       <div className="mt-1">
                         <Input
+                          required
                           id="email"
                           name="email"
                           type="email"
                           placeholder="Enter your email address"
-                          className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                          className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-xs border-gray-300 rounded-md"
                         />
                       </div>
                     </div>
 
                     <div className="w-full">
-                      <label className="block text-sm font-medium text-[#76828D] mb-2">
+                      <label className="block text-xs font-medium text-[#76828D] mb-2">
                         Date Of Birth
                       </label>
                       <Input
@@ -176,7 +293,7 @@ const CreateUser = () => {
                         id="dateOfBirth"
                         name="dateOfBirth"
                         placeholder="e.g. February-11-2004"
-                        className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                        className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-xs border-gray-300 rounded-md"
                       />
                     </div>
                   </div>
@@ -185,26 +302,28 @@ const CreateUser = () => {
                     <div className="w-full">
                       <label
                         htmlFor="email"
-                        className="block text-sm font-medium text-[#76828D]"
+                        className="block text-xs font-medium text-[#76828D]"
                       >
                         Age
                       </label>
                       <div className="mt-1">
                         <Input
+                          required
                           id="age"
                           name="age"
                           type="number"
                           placeholder="Enter age here"
-                          className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                          className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-xs border-gray-300 rounded-md"
                         />
                       </div>
                     </div>
 
                     <div className="w-full">
-                      <label className="block text-sm font-medium text-[#76828D] mb-2">
+                      <label className="block text-xs font-medium text-[#76828D] mb-2">
                         Gender
                       </label>
                       <Select
+                        required
                         onValueChange={(value) =>
                           setGender(value ? value : "male")
                         }
@@ -230,7 +349,7 @@ const CreateUser = () => {
                   <h3 className="text-lg leading-6 font-medium text-dark dark:text-white">
                     Contact Information
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500">
                     Use a permanent contact and address where you can be
                     contacted.
                   </p>
@@ -239,17 +358,18 @@ const CreateUser = () => {
                   <div className="w-full">
                     <label
                       htmlFor="contact"
-                      className="block text-sm font-medium text-[#76828D]"
+                      className="block text-xs font-medium text-[#76828D]"
                     >
                       Contact
                     </label>
                     <div className="mt-1">
                       <Input
+                        required
                         id="contact"
                         name="contact"
                         type="text"
                         placeholder="Enter your contact number"
-                        className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                        className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-xs border-gray-300 rounded-md"
                       />
                     </div>
                   </div>
@@ -257,17 +377,18 @@ const CreateUser = () => {
                   <div className="w-full">
                     <label
                       htmlFor="street-address"
-                      className="block text-sm font-medium text-[#76828D]"
+                      className="block text-xs font-medium text-[#76828D]"
                     >
                       Address
                     </label>
                     <div className="mt-2">
                       <Input
+                        required
                         id="address"
                         name="address"
                         type="text"
                         placeholder="Enter you complete address"
-                        className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                        className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-xs border-gray-300 rounded-md"
                       />
                     </div>
                   </div>
@@ -282,14 +403,14 @@ const CreateUser = () => {
                   <h3 className="text-lg leading-6 font-medium text-dark dark:text-white">
                     Manage Bio
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500">
                     Provide short and simple bio that best describes you.
                   </p>
                 </div>
                 <div className="w-full mt-6">
                   <label
                     htmlFor="role"
-                    className="block text-sm font-medium text-[#76828D]"
+                    className="block text-xs font-medium text-[#76828D]"
                   >
                     Bio
                   </label>
@@ -298,7 +419,7 @@ const CreateUser = () => {
                     name="bio"
                     rows={5}
                     placeholder="Tell me more about yourself"
-                    className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                    className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-xs border-gray-300 rounded-md"
                   />
                 </div>
               </div>
@@ -311,7 +432,7 @@ const CreateUser = () => {
                   <h3 className="text-lg leading-6 font-medium text-dark dark:text-white">
                     Manage Role
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500">
                     Manage the user&apos;s role and let them access necessary
                     features.
                   </p>
@@ -320,12 +441,13 @@ const CreateUser = () => {
                 <div className="w-full mt-6">
                   <label
                     htmlFor="role"
-                    className="block text-sm font-medium text-[#76828D]"
+                    className="block text-xs font-medium text-[#76828D]"
                   >
                     User Role
                   </label>
                   <div className="mt-1">
                     <Select
+                      required
                       onValueChange={(value) =>
                         setRole(value ? value : "guest")
                       }
