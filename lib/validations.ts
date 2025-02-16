@@ -100,8 +100,15 @@ export const validateFormFields = (formField: FormField): ValidationResult => {
     });
   };
 
+  // const containsSpecialCharacters = (value: string): boolean => {
+  //   const regex = /[^a-zA-Z0-9]/; // Adjust the regex pattern according to your requirements
+  //   return regex.test(value);
+  // };
+
   // Validation rules
-  const validationRules: { [key: string]: (value: string) => string | void } = {
+  const validationRules: {
+    [key: string]: (value: string, formField: FormField) => string | void;
+  } = {
     firstname: (value: string) => {
       if (!value) {
         return "First name is required";
@@ -165,8 +172,10 @@ export const validateFormFields = (formField: FormField): ValidationResult => {
     contact: (value: string) => {
       if (!value) {
         return "Phone contact number is required";
-      } else if (value.length !== 11) {
-        return "Contact number must consist of 11 characters only.";
+      } else if (value.length < 7) {
+        return "Contact number must not be less than 7 digits";
+      } else if (value.length > 15) {
+        return "Contact number must not be greater than 15 digits";
       } else if (isSQLInjection(value)) {
         return `Possible SQL injection detected in "${value}". Avoid using SQL keywords`;
       }
@@ -196,6 +205,115 @@ export const validateFormFields = (formField: FormField): ValidationResult => {
       }
       return "";
     },
+    doctorId: (value: string) => {
+      if (!value) {
+        return "Assign the patient to a Doctor first";
+      }
+      return "";
+    },
+    occupation: (value: string) => {
+      if (value.length <= 2) {
+        return "Occupation must be greater than 2 characters long";
+      } else if (value.length > 100) {
+        return "Occupation must be less than or equal to 100 characters only";
+      } else if (isSQLInjection(value)) {
+        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+      }
+      return "";
+    },
+    emergencyContactName: (value: string, formField: FormField) => {
+      if (!value) {
+        if (formField.emergencyContactNumber) {
+          return "Emergency contact name is required if an emergency contact number is provided";
+        }
+      } else if (value.length <= 2) {
+        return "Emergency Contact Name must be greater than 2 characters long";
+      } else if (value.length > 100) {
+        return "Emergency Contact Name must be less than or equal to 100 characters only";
+      } else if (isSQLInjection(value)) {
+        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+      }
+      return "";
+    },
+    emergencyContactNumber: (value: string, formField: FormField) => {
+      if (!value) {
+        if (formField.emergencyContactName) {
+          return "Emergency contact number is required if an emergency contact name is provided";
+        }
+      } else if (value.length < 7) {
+        return "Emergency contact number must not be less than 7 digits";
+      } else if (value.length > 15) {
+        return "Emergency contact number must not be greater than 15 digits";
+      } else if (isSQLInjection(value)) {
+        return `Possible SQL injection detected in "${value}". Avoid using SQL keywords`;
+      }
+      return "";
+    },
+    insuranceProvider: (value: string, formField: FormField) => {
+      if (!value) {
+        if (formField.insurancePolicyNumber) {
+          return "Insurance provider is required if an insurance policy number is provided";
+        }
+      } else if (value.length <= 2) {
+        return "Insurance provider must be greater than 2 characters long";
+      } else if (value.length > 100) {
+        return "Insurance provider must be less than or equal to 100 characters only";
+      } else if (isSQLInjection(value)) {
+        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+      }
+      return "";
+    },
+    insurancePolicyNumber: (value: string, formField: FormField) => {
+      if (!value) {
+        if (formField.insuranceProvider) {
+          return "Insurance policy number is required if an insurance provider is provided";
+        }
+      } else if (value.length < 5) {
+        return "Insurance policy number must be at least 5 characters long";
+      } else if (value.length > 30) {
+        return "Insurance policy number must be less than or equal to 30 characters only";
+      } else if (isSQLInjection(value)) {
+        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+      }
+      return "";
+    },
+    identificationCardType: (value: string, formField: FormField) => {
+      if (!value) {
+        if (formField.identificationCardNumber) {
+          return "Identification card type is required if an identification card number is provided";
+        }
+      } else if (isSQLInjection(value)) {
+        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+      }
+      return "";
+    },
+    identificationCardNumber: (value: string, formField: FormField) => {
+      if (!value) {
+        if (formField.identificationCardType) {
+          return "Identification card number is required if an identification card type is provided";
+        }
+      } else if (isSQLInjection(value)) {
+        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+      }
+      return "";
+    },
+    allergies: (value: string) => {
+      if (isSQLInjection(value)) {
+        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+      }
+      return "";
+    },
+    familyMedicalHistory: (value: string) => {
+      if (value.length <= 2) {
+        return "Family medical history must be greater than 2 characters long";
+      } else if (value.length > 100) {
+        return "Family medical history must be less than or equal to 100 characters only";
+      } else if (isSQLInjection(value)) {
+        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+      }
+      return "";
+    },
+
     // Add more validation rules as needed...
   };
 
@@ -205,7 +323,7 @@ export const validateFormFields = (formField: FormField): ValidationResult => {
       formField.hasOwnProperty(key) &&
       validationRules[key as keyof typeof validationRules]
     ) {
-      const error = validationRules[key](formField[key]);
+      const error = validationRules[key](formField[key], formField);
       if (error) {
         errors[key] = error;
         isValid = false;
