@@ -140,3 +140,7 @@ declare interface SupplierType {
   website: string;
   createdAt: string;
 }
+
+declare interface FieldErrors {
+  [key: string]: string;
+}

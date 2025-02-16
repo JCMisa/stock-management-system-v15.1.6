@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import LoaderDialog from "@/components/custom/LoaderDialog";
 import { formatDate } from "@/lib/utils";
+import { matchAgeBirth, validateFormFields } from "@/lib/validations";
 
 const EditProfilePage = ({
   params,
@@ -45,6 +46,9 @@ const EditProfilePage = ({
 }) => {
   const { user } = useUser();
   const router = useRouter();
+
+  // error states
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const [currentUser, setCurrentUser] = useState<UserType>();
   const [currentUserRole, setCurrentUserRole] = useState<string>("");
@@ -141,6 +145,29 @@ const EditProfilePage = ({
         role: finalRole as string,
       };
 
+      // ... validation starts here ...
+      const { isValid, errors } = validateFormFields(formField);
+
+      // Validation checks – for dateOfBirth and age matching
+      if (
+        matchAgeBirth(formField.dateOfBirth) !== parseInt(formField.age, 10)
+      ) {
+        errors.dateOfBirth = "Date of birth does not match the provided age";
+        errors.age = "Age does not match the provided date of birth";
+      }
+      // ... validation ends here ...
+
+      if (!isValid) {
+        setFieldErrors(errors);
+        console.log("Form has errors:", errors); // Log all errors to the console
+        toast(
+          <p className="font-bold text-xs text-red-500">
+            Please correct the form errors.
+          </p>
+        );
+        return null; // Stop execution if the form is invalid
+      }
+
       const result = await updateUserInfo(prevState, userId, formField);
 
       if (result?.data !== null) {
@@ -175,6 +202,19 @@ const EditProfilePage = ({
         action={formAction}
         className="space-y-8 container m-auto divide-y divide-gray-800 dark:divide-gray-800"
       >
+        {/* Display errors at the top */}
+        {Object.entries(fieldErrors).length > 0 && ( // Only show errors if there are any
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-xs">
+            {/* Styling for error box */}
+            <ul className="list-disc pl-5">
+              {/* Use a list for better formatting */}
+              {Object.entries(fieldErrors).map(([key, message]) => (
+                <li key={key}>{message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="space-y-8 divide-y divide-gray-800 dark:divide-gray-200">
           {/* profile image */}
           <div>

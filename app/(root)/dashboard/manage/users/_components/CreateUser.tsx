@@ -27,18 +27,18 @@ import { createUserInfo } from "@/lib/actions/user";
 import { toast } from "sonner";
 import LoaderDialog from "@/components/custom/LoaderDialog";
 import {
-  calculateAge,
-  isFutureDate,
-  isPositiveInteger,
-  isSQLInjection,
-  isValidDate,
-  isValidEmail,
   matchAgeBirth,
+  // calculateAge,
+  // isFutureDate,
+  // isPositiveInteger,
+  // isSQLInjection,
+  // isValidAddress,
+  // isValidDate,
+  // isValidEmail,
+  // isValidPhoneNumber,
+  // matchAgeBirth,
+  validateFormFields,
 } from "@/lib/validations";
-
-interface FieldErrors {
-  [key: string]: string;
-}
 
 const CreateUser = () => {
   // error states
@@ -63,91 +63,7 @@ const CreateUser = () => {
       };
 
       // ... validation starts here ...
-
-      let isValid = true; // Flag to track overall form validity
-      const errors: { [key: string]: string } = {}; // Object to store error messages
-
-      // Validation checks – for firstname
-      if (!formField.firstname) {
-        errors.firstname = "First name is required";
-        isValid = false;
-      } else if (formField.firstname.length <= 2) {
-        errors.firstname = "First name must be greater than 2 characters long";
-        isValid = false;
-      } else if (formField.firstname.length > 150) {
-        errors.firstname =
-          "First name must be less than or equal to 150 characters only";
-        isValid = false;
-      } else if (isSQLInjection(formField.firstname)) {
-        errors.firstname =
-          "Possible SQL injection detected. Avoid using SQL keywords";
-        isValid = false;
-      }
-
-      // Validation checks – for lastname
-      if (!formField.lastname) {
-        errors.lastname = "Last name is required";
-        isValid = false;
-      } else if (formField.firstname.length <= 2) {
-        errors.firstname = "Last name must be greater than 2 characters long";
-        isValid = false;
-      } else if (formField.lastname.length > 150) {
-        errors.firstname =
-          "Last name must be less than or equal to 150 characters only";
-        isValid = false;
-      } else if (isSQLInjection(formField.lastname)) {
-        errors.lastname =
-          "Possible SQL injection detected. Avoid using SQL keywords";
-        isValid = false;
-      }
-
-      // Validation checks – for email
-      if (!formField.email) {
-        errors.email = "Email is required";
-        isValid = false;
-      } else if (!isValidEmail(formField.email)) {
-        // Example email validation
-        errors.email = "Invalid email format";
-        isValid = false;
-      } else if (formField.email.length <= 2) {
-        errors.email = "Email must be greater than 2 characters long";
-        isValid = false;
-      } else if (formField.email.length > 150) {
-        errors.email =
-          "Email must be less than or equal to 150 characters only";
-        isValid = false;
-      } else if (isSQLInjection(formField.email)) {
-        errors.email =
-          "Possible SQL injection detected. Avoid using SQL keywords";
-        isValid = false;
-      }
-
-      // Validation checks – for dateOfBirth
-      if (!isValidDate(formField.dateOfBirth)) {
-        errors.dateOfBirth = "Invalid date format. Please use YYYY-MM-DD";
-        isValid = false;
-      } else if (isFutureDate(formField.dateOfBirth)) {
-        errors.dateOfBirth = "Date of birth cannot be in the future";
-        isValid = false;
-      } else if (calculateAge(formField.dateOfBirth) < 18) {
-        errors.dateOfBirth = "You must be at least 18 years old";
-        isValid = false;
-      }
-
-      // Validation checks – for age
-      if (!formField.age) {
-        errors.age = "Age is required";
-        isValid = false;
-      } else if (!isPositiveInteger(formField.age)) {
-        errors.age = "Age must be a positive integer";
-        isValid = false;
-      } else if (Number(formField.age) < 18) {
-        errors.age = "You must be at least 18 years old";
-        isValid = false;
-      } else if (Number(formField.age) > 150) {
-        errors.age = "Age must be less than or equal to 100 years old";
-        isValid = false;
-      }
+      const { isValid, errors } = validateFormFields(formField);
 
       // Validation checks – for dateOfBirth and age matching
       if (
@@ -155,9 +71,7 @@ const CreateUser = () => {
       ) {
         errors.dateOfBirth = "Date of birth does not match the provided age";
         errors.age = "Age does not match the provided date of birth";
-        isValid = false;
       }
-
       // ... validation ends here ...
 
       if (!isValid) {
