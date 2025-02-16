@@ -110,7 +110,7 @@ export const validateFormFields = (formField: FormField): ValidationResult => {
       } else if (value.length > 150) {
         return "First name must be less than or equal to 150 characters only";
       } else if (isSQLInjection(value)) {
-        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+        return `Possible SQL injection detected in "${value}". Avoid using SQL keywords`;
       }
       return "";
     },
@@ -122,7 +122,7 @@ export const validateFormFields = (formField: FormField): ValidationResult => {
       } else if (value.length > 150) {
         return "Last name must be less than or equal to 150 characters only";
       } else if (isSQLInjection(value)) {
-        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+        return `Possible SQL injection detected in "${value}". Avoid using SQL keywords`;
       }
       return "";
     },
@@ -136,7 +136,7 @@ export const validateFormFields = (formField: FormField): ValidationResult => {
       } else if (value.length > 150) {
         return "Email must be less than or equal to 150 characters only";
       } else if (isSQLInjection(value)) {
-        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+        return `Possible SQL injection detected in "${value}". Avoid using SQL keywords`;
       }
       return "";
     },
@@ -155,8 +155,8 @@ export const validateFormFields = (formField: FormField): ValidationResult => {
         return "Age is required";
       } else if (!isPositiveInteger(value)) {
         return "Age must be a positive integer";
-      } else if (Number(value) < 18) {
-        return "You must be at least 18 years old";
+      } else if (Number(value) < 1) {
+        return "Age of 0 and below is not valid";
       } else if (Number(value) > 150) {
         return "Age must be less than or equal to 100 years old";
       }
@@ -168,7 +168,7 @@ export const validateFormFields = (formField: FormField): ValidationResult => {
       } else if (value.length !== 11) {
         return "Contact number must consist of 11 characters only.";
       } else if (isSQLInjection(value)) {
-        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+        return `Possible SQL injection detected in "${value}". Avoid using SQL keywords`;
       }
       return "";
     },
@@ -180,7 +180,19 @@ export const validateFormFields = (formField: FormField): ValidationResult => {
       } else if (value.length > 255) {
         return "Address must be less than or equal to 255 characters";
       } else if (isSQLInjection(value)) {
-        return `Possible SQL injection detected in ${value}. Avoid using SQL keywords`;
+        return `Possible SQL injection detected in "${value}". Avoid using SQL keywords`;
+      }
+      return "";
+    },
+    conditionName: (value: string) => {
+      if (!value) {
+        return "Condition name is required";
+      } else if (value.length <= 2) {
+        return "Condition name must be greater than 2 characters long";
+      } else if (value.length > 150) {
+        return "Condition name must be less than or equal to 150 characters only";
+      } else if (isSQLInjection(value)) {
+        return `Possible SQL injection detected in "${value}". Avoid using SQL keywords`;
       }
       return "";
     },

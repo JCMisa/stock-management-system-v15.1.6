@@ -1,9 +1,9 @@
 import Image from "next/image";
 import React from "react";
-import CreatePatientForm from "../../_components/CreatePatientForm";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { getAllPatients } from "@/lib/actions/patient";
+import CreatePatientForm from "../../../_components/CreatePatientForm";
 
 // for caching a dynamic route to make page loading faster
 export async function generateStaticParams() {
@@ -19,9 +19,10 @@ export async function generateStaticParams() {
 const CreatePatientPage = async ({
   params,
 }: {
-  params: Promise<{ patientId: string }>;
+  params: Promise<{ patientId: string; mode: string }>;
 }) => {
   const patientId = (await params)?.patientId;
+  const mode = (await params)?.mode;
 
   return (
     <div>
@@ -52,7 +53,7 @@ const CreatePatientPage = async ({
             </div>
 
             <div className="my-10">
-              <CreatePatientForm patientId={patientId} />
+              <CreatePatientForm patientId={patientId} mode={mode} />
             </div>
 
             <p className="text-xs justify-items-end text-center text-gray-500 xl:text-left">

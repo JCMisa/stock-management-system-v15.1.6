@@ -31,9 +31,19 @@ import { v4 as uuidv4 } from "uuid";
 import "react-quill-new/dist/quill.snow.css";
 import LoaderDialog from "@/components/custom/LoaderDialog";
 import AllergiesInput from "./AllergiesInput";
+// import { validateFormFields } from "@/lib/validations";
 
-const CreatePatientForm = ({ patientId }: { patientId: string }) => {
+const CreatePatientForm = ({
+  patientId,
+  mode,
+}: {
+  patientId: string;
+  mode: string;
+}) => {
   const router = useRouter();
+
+  // // error states
+  // const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const [patientLayout, setPatientLayout] = useState<any>();
   const [doctorsList, setDoctorsList] = useState<UserType[]>([]);
@@ -143,9 +153,27 @@ const CreatePatientForm = ({ patientId }: { patientId: string }) => {
         conditionSeverity: finalConditionSeverity as string,
         allergies: allergiesArray.join(", "),
         familyMedicalHistory: formData.get("familyMedicalHistory") as string,
-        createdAt: moment().format("MM-DD-YYYY") as string,
+        createdAt:
+          mode === "create"
+            ? (moment().format("MM-DD-YYYY") as string)
+            : patientLayout?.createdAt,
         updatedAt: moment().format("MM-DD-YYYY") as string,
       };
+
+      // // ... validation starts here ...
+      // const { isValid, errors } = validateFormFields(formField);
+      // // ... validation ends here ...
+
+      // if (!isValid) {
+      //   setFieldErrors(errors);
+      //   console.log("Form has errors:", errors); // Log all errors to the console
+      //   toast(
+      //     <p className="font-bold text-xs text-red-500">
+      //       Please correct the form errors.
+      //     </p>
+      //   );
+      //   return null; // Stop execution if the form is invalid
+      // }
 
       // add patient information
       const result = await updatePatientInfoByReceptionistOrAdmin(
@@ -164,7 +192,7 @@ const CreatePatientForm = ({ patientId }: { patientId: string }) => {
       }
 
       // add patient to appointment table with their doctor
-      if (doctorId || patientLayout?.doctorId) {
+      if ((doctorId || patientLayout?.doctorId) && mode === "create") {
         const appointmentId = uuidv4();
         const result2 = await addAppointment(
           appointmentId,
@@ -476,38 +504,6 @@ const CreatePatientForm = ({ patientId }: { patientId: string }) => {
                 </SelectContent>
               </Select>
             </div>
-            {/* <div className="flex flex-col gap-1 w-full">
-              <label
-                htmlFor="allergies"
-                className="text-xs text-gray-500  dark:text-gray-400"
-              >
-                Allergies{" "}
-                <span className="text-[10px] text-gray-500  dark:text-gray-400">
-                  (Press space to add more allergy)
-                </span>
-              </label>
-              <Input
-                type="text"
-                value={allergiesInputValue}
-                onChange={handleInputChange}
-                placeholder="Type and add items with space or comma"
-              />
-              <ul className="w-full shadow-lg p-3 flex flex-auto gap-1 overflow-auto card-scroll">
-                {allergiesArray.length !== 0 &&
-                  allergiesArray.map((item: string, index: number) => (
-                    <Badge
-                      key={index}
-                      className="bg-light hover:bg-light-100 dark:bg-dark dark:hover:bg-dark-100 text-dark dark:text-white flex flex-row items-center gap-1"
-                    >
-                      {item}
-                      <XIcon
-                        onClick={() => removeItem(index)}
-                        className="cursor-pointer w-4 h-4 text-red-500"
-                      />
-                    </Badge>
-                  ))}
-              </ul>
-            </div> */}
             <AllergiesInput
               initialAllergies={patientLayout?.allergies}
               onAllergiesChange={(newAllergies) => {

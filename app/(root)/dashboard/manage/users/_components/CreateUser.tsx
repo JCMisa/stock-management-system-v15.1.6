@@ -26,19 +26,7 @@ import moment from "moment";
 import { createUserInfo } from "@/lib/actions/user";
 import { toast } from "sonner";
 import LoaderDialog from "@/components/custom/LoaderDialog";
-import {
-  matchAgeBirth,
-  // calculateAge,
-  // isFutureDate,
-  // isPositiveInteger,
-  // isSQLInjection,
-  // isValidAddress,
-  // isValidDate,
-  // isValidEmail,
-  // isValidPhoneNumber,
-  // matchAgeBirth,
-  validateFormFields,
-} from "@/lib/validations";
+import { matchAgeBirth, validateFormFields } from "@/lib/validations";
 
 const CreateUser = () => {
   // error states

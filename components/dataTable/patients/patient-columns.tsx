@@ -292,7 +292,9 @@ export const columns: ColumnDef<any>[] = [
           <DropdownMenuContent align="end">
             {(userRole === "admin" || userRole === "receptionist") && (
               <>
-                <Link href={`/dashboard/manage/patients/create/${patientId}`}>
+                <Link
+                  href={`/dashboard/manage/patients/create/${patientId}/update`}
+                >
                   <DropdownMenuItem>
                     <Pencil className="h-4 w-4 mr-2" />
                     Edit
